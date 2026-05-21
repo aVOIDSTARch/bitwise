@@ -418,3 +418,30 @@ pub const PHYS_ADDR_MASK: u64 = (1u64 << PHYS_ADDR_BITS) - 1;
 /// x86_64 canonical virtual address mask (48-bit addressing, 4-level paging).
 /// Bits 63:48 must be copies of bit 47. Use 57-bit mask for 5-level paging (LA57).
 pub const CANONICAL_ADDR_MASK_48: u64 = 0x0000_FFFF_FFFF_FFFF;
+
+
+// Testing utilities (not public API)
+// Trait and functions for testing
+pub trait Testable {
+    fn run(&self) -> ();
+}
+
+impl<T> Testable for T
+where
+    T: Fn(),
+{
+    fn run(&self) {
+        serial_print!("{}...\t", core::any::type_name::<T>());
+        self();
+        serial_println!("[ok]");
+    }
+}
+
+/// This function is called from `main` when `cfg(test)` is set.
+pub fn test_runner(tests: &[&dyn Testable]) {
+    serial_println!("Running {} tests", tests.len());
+    for test in tests {
+        test.run();
+    }
+    exit_qemu(QemuExitCode::Success);
+}
