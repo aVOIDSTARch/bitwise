@@ -1,0 +1,6 @@
+[build]
+target = "x86_64-unknown-none"
+
+[alias]
+# Run tests on the host (required because x86_64-unknown-none has no test runner)
+test-host = "test --target aarch64-apple-darwin"
