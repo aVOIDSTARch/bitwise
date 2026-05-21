@@ -1,3 +1,5 @@
+use core::debug_assert;
+
 /// Round `addr` DOWN to the nearest multiple of `align`.
 ///
 /// Equivalent to `addr - (addr % align)` when `align` is a power of two,

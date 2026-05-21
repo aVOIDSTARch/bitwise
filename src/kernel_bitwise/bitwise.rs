@@ -17,14 +17,21 @@
 //! ├── arithmetic/
 //! │   ├── bits.rs          — set/clear/toggle/test, popcount, LSB/MSB utilities
 //! │   └── flags.rs         — FlagRegister type; RFLAGS, CR0, CR4, EFER constants
+//! ├── cpu/
+//! │   ├── cpuid.rs         — CPUID instruction wrapper and feature detection
+//! │   ├── instructions.rs  — pause, hlt, cli, sti, mfence, invlpg, clflush
+//! │   └── msr.rs           — RDMSR/WRMSR wrappers and MSR address constants
 //! ├── helpers/
+//! │   ├── bitmap.rs        — BitArray<N> fixed-size bitset for frame allocation
 //! │   ├── cache.rs         — cache-line alignment and span arithmetic
+//! │   ├── gdt.rs           — GDT/IDT descriptor encoding, SegmentSelector
 //! │   └── paging.rs        — page table entry encoding, vaddr index extraction
 //! ├── insertion_extraction/
 //! │   ├── dma.rs           — DMA buffer alignment and scatter-gather descriptors
 //! │   ├── mmio.rs          — volatile MMIO read/write, MmioBlock register view
 //! │   └── pio.rs           — x86 IN/OUT port I/O instructions
 //! └── kernel_bitwise/
+//!     ├── addr.rs          — PhysAddr and VirtAddr typed address wrappers
 //!     ├── align.rs         — address alignment, frame/page arithmetic
 //!     ├── endian.rs        — big/little endian conversion and unaligned reads
 //!     └── bitwise.rs       ← YOU ARE HERE (crate root / lib.rs)
@@ -34,10 +41,15 @@
 //!
 //! ```text
 //! align  ←──────────────────────── everything else depends on this
+//!   └── addr  (also uses paging)
 //!   └── bits
 //!         └── flags
+//!         └── gdt  (uses bits::bit_field_set)
 //!               └── paging, cache
 //!                     └── dma, mmio, pio, endian
+//! bitmap  ←─────────────────────── standalone, no deps on above
+//! cpu/    ←─────────────────────── hardware-only, no deps on above
+//!   (msr, cpuid, instructions)
 //! ```
 //!
 //! ## Usage
@@ -83,6 +95,16 @@ pub mod align;
 /// for parsing protocol headers and firmware tables without undefined behavior.
 #[path = "endian.rs"]
 pub mod endian;
+
+/// Typed physical and virtual address wrappers.
+///
+/// [`addr::PhysAddr`] enforces that bits 63:52 are zero (x86_64 MAXPHYADDR = 52).
+/// [`addr::VirtAddr`] enforces x86_64 canonicality: bits 63:48 must be the
+/// sign-extension of bit 47.
+///
+/// Key types: [`addr::PhysAddr`], [`addr::VirtAddr`].
+#[path = "addr.rs"]
+pub mod addr;
 
 // --- arithmetic/ -----------------------------------------------------------
 
@@ -135,6 +157,26 @@ pub mod cache;
 #[path = "../helpers/paging.rs"]
 pub mod paging;
 
+/// x86_64 descriptor table encoding: GDT segment descriptors, IDT gate
+/// descriptors, and TSS system descriptors.
+///
+/// All encoding functions are `const` and use [`bits::bit_field_set`] for
+/// readable, auditable field construction.
+///
+/// Key types: [`gdt::SegmentSelector`], [`gdt::SegmentDescriptor`],
+/// [`gdt::TssDescriptor`], [`gdt::GateDescriptor`].
+#[path = "../helpers/gdt.rs"]
+pub mod gdt;
+
+/// Fixed-size bitset backed by a `[u64; N]` array.
+///
+/// [`bitmap::BitArray<N>`] requires no heap allocation and is designed as the
+/// backing data structure for a physical memory frame allocator.
+///
+/// Key type: [`bitmap::BitArray`].
+#[path = "../helpers/bitmap.rs"]
+pub mod bitmap;
+
 // --- insertion_extraction/ -------------------------------------------------
 
 /// DMA buffer alignment, 32-bit window checking, and scatter-gather list
@@ -176,6 +218,41 @@ pub mod mmio;
 #[cfg(target_arch = "x86_64")]
 #[path = "../insertion_extraction/pio.rs"]
 pub mod pio;
+
+// --- cpu/ (x86_64 only — require hardware instructions) --------------------
+
+/// x86_64 Model-Specific Register access via `RDMSR` / `WRMSR`.
+///
+/// Use [`msr::rdmsr`] and [`msr::wrmsr`] with the constants in [`msr::msr_num`].
+/// For bit-level definitions of EFER see [`flags::efer`].
+///
+/// All functions are `unsafe` — reading/writing MSRs can crash the system.
+#[cfg(target_arch = "x86_64")]
+#[path = "../cpu/msr.rs"]
+pub mod msr;
+
+/// `CPUID` instruction wrapper and CPU feature detection.
+///
+/// Use [`cpuid::cpuid`] / [`cpuid::cpuid_leaf`] for raw leaf access, or the
+/// `has_*` functions (e.g. [`cpuid::has_nx`], [`cpuid::has_apic`]) for guarded
+/// feature checks.
+///
+/// Key type: [`cpuid::CpuidResult`].
+#[cfg(target_arch = "x86_64")]
+#[path = "../cpu/cpuid.rs"]
+pub mod cpuid;
+
+/// Thin wrappers around x86_64 CPU instructions.
+///
+/// Safe: [`instructions::pause`], [`instructions::mfence`],
+/// [`instructions::lfence`], [`instructions::sfence`].
+///
+/// Unsafe (change global CPU state): [`instructions::hlt`],
+/// [`instructions::cli`], [`instructions::sti`], [`instructions::invlpg`],
+/// [`instructions::wbinvd`].
+#[cfg(target_arch = "x86_64")]
+#[path = "../cpu/instructions.rs"]
+pub mod instructions;
 
 // ---------------------------------------------------------------------------
 // Prelude
@@ -296,6 +373,27 @@ pub mod prelude {
         cpu_to_be16, cpu_to_be32, cpu_to_be64,
         read_be32, write_be32, read_le32,
     };
+
+    // Typed addresses
+    pub use crate::addr::{PhysAddr, VirtAddr};
+
+    // GDT/IDT descriptors
+    pub use crate::gdt::SegmentSelector;
+
+    // Bitmap
+    pub use crate::bitmap::BitArray;
+
+    // CPU instructions (x86_64 only)
+    #[cfg(target_arch = "x86_64")]
+    pub use crate::instructions::{pause, hlt, cli, sti, mfence, lfence, sfence};
+
+    // MSR (x86_64 only)
+    #[cfg(target_arch = "x86_64")]
+    pub use crate::msr::{rdmsr, wrmsr};
+
+    // CPUID (x86_64 only)
+    #[cfg(target_arch = "x86_64")]
+    pub use crate::cpuid::{CpuidResult, cpuid_leaf, max_basic_leaf};
 }
 
 // ---------------------------------------------------------------------------

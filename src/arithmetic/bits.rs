@@ -1,3 +1,6 @@
+
+use core::debug_assert;
+
 /// Set bit `n` in `value`. Bit 0 is the least significant.
 #[inline(always)]
 pub const fn bit_set(value: u64, n: u32) -> u64 {
