@@ -1,4 +1,12 @@
-#![cfg_attr(not(test), no_std)]
+// no_std in all non-test builds AND in test builds targeting bare metal.
+// When testing on the host (aarch64-apple-darwin), test = true and
+// target_os != "none", so std is available for normal unit tests.
+#![cfg_attr(any(not(test), target_os = "none"), no_std)]
+// QEMU test binary attributes — only active when targeting x86_64-unknown-none.
+#![cfg_attr(all(test, target_os = "none"), no_main)]
+#![cfg_attr(all(test, target_os = "none"), feature(custom_test_frameworks))]
+#![cfg_attr(all(test, target_os = "none"), test_runner(framework::runner))]
+#![cfg_attr(all(test, target_os = "none"), reexport_test_harness_main = "test_main")]
 #![deny(unsafe_op_in_unsafe_fn)]   // every unsafe block must justify itself
 #![warn(missing_docs)]
 #![warn(clippy::missing_safety_doc)]
@@ -420,28 +428,21 @@ pub const PHYS_ADDR_MASK: u64 = (1u64 << PHYS_ADDR_BITS) - 1;
 pub const CANONICAL_ADDR_MASK_48: u64 = 0x0000_FFFF_FFFF_FFFF;
 
 
-// Testing utilities (not public API)
-// Trait and functions for testing
-pub trait Testable {
-    fn run(&self) -> ();
-}
+// ── QEMU test entry point (x86_64-unknown-none only) ─────────────────────────
+//
+// For host tests (aarch64-apple-darwin), the standard Rust test harness runs.
+// For QEMU tests (x86_64-unknown-none), this _start function initializes the
+// serial port, runs tests via framework::runner, then exits QEMU.
+//
+// Test functions should be annotated with:
+//   #[cfg_attr(not(target_os = "none"), test)]
+//   #[cfg_attr(target_os = "none", test_case)]
+//   fn my_test() { ... }
 
-impl<T> Testable for T
-where
-    T: Fn(),
-{
-    fn run(&self) {
-        serial_print!("{}...\t", core::any::type_name::<T>());
-        self();
-        serial_println!("[ok]");
-    }
-}
-
-/// This function is called from `main` when `cfg(test)` is set.
-pub fn test_runner(tests: &[&dyn Testable]) {
-    serial_println!("Running {} tests", tests.len());
-    for test in tests {
-        test.run();
-    }
-    exit_qemu(QemuExitCode::Success);
+#[cfg(all(test, target_os = "none"))]
+#[no_mangle]
+pub extern "C" fn _start() -> ! {
+    unsafe { platform::init(); }
+    test_main();
+    platform::exit_success()
 }

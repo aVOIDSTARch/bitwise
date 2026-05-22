@@ -1,18 +1,16 @@
 [package]
 name    = "bitwise"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 [lib]
 path = "src/kernel_bitwise/bitwise.rs"
 
 [dependencies]
-# none — core only
+# none — pure logic, no hardware deps
 
-[profile.dev]
-overflow-checks = true   # catch wrapping arithmetic bugs early
-
-[profile.release]
-overflow-checks = false  # release: wrapping is intentional in address arithmetic
-opt-level       = 3
-lto             = "thin"
+# Test infrastructure for x86_64-unknown-none (QEMU tests).
+# Not compiled when testing on the host (aarch64-apple-darwin).
+[target.'cfg(target_arch = "x86_64")'.dev-dependencies]
+framework = { path = "../framework", features = ["panic_handler"] }
+platform  = { path = "../platform" }
