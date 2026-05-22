@@ -4,7 +4,7 @@
 /// The underlying representation is always the raw machine word.
 ///
 
-use core::{clone::Clone, cmp::{Eq, PartialEq}, debug_assert, fmt::Debug, marker::Copy, assert, assert_eq};
+use core::{clone::Clone, cmp::{Eq, PartialEq}, fmt::Debug, marker::Copy};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(transparent)]

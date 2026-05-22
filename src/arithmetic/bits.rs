@@ -1,7 +1,5 @@
 
-use core::debug_assert;
 use core::option::Option::{self, Some, None};
-use core::{ assert, assert_eq};
 
 /// Set bit `n` in `value`. Bit 0 is the least significant.
 #[inline(always)]

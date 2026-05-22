@@ -1,5 +1,4 @@
 use crate::align::frame_offset;
-use core::{debug_assert, assert, assert_eq};
 
 /// x86_64 page table entry flag bits (Intel Vol. 3A §4.5, Table 4-19).
 pub mod pte_flags {
