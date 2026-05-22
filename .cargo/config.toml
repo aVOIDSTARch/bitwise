@@ -1,18 +1,2 @@
-# Build settings for bare-metal x86_64 tests (QEMU via bootimage).
-# Reuses the same target spec and build-std config as crusty_os so that
-# compiler_builtins cross-compilation from aarch64 works correctly.
-
-[build]
-target = "../crusty_os/x86_64-crusty_os.json"
-
-[unstable]
-json-target-spec = true
-build-std = ["core", "compiler_builtins", "alloc"]
-build-std-features = ["compiler-builtins-mem"]
-
-[target.'cfg(target_os = "none")']
-runner = "bootimage runner"
-
-[alias]
-# Run tests on the host Mac with std (standard Rust test runner, no QEMU).
-test-host = "test --target aarch64-apple-darwin"
+# bitwise inherits target, build-std, and runner from the workspace
+# .cargo/config.toml — no overrides needed here.
