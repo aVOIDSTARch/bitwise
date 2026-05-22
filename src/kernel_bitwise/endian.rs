@@ -61,7 +61,7 @@ mod tests {
 
     // --- be16 roundtrip ---
 
-    #[test]
+    #[test_case]
     fn be16_roundtrip() {
         for v in [0u16, 1, 0x0102, 0xFF00, u16::MAX] {
             assert_eq!(be16_to_cpu(cpu_to_be16(v)), v);
@@ -69,7 +69,7 @@ mod tests {
         }
     }
 
-    #[test]
+    #[test_case]
     fn cpu_to_be16_puts_msb_first_in_memory() {
         // cpu_to_be16 produces a value whose memory layout (to_ne_bytes) is [MSB, LSB]
         let be = cpu_to_be16(0x0102u16);
@@ -78,7 +78,7 @@ mod tests {
 
     // --- be32 roundtrip ---
 
-    #[test]
+    #[test_case]
     fn be32_roundtrip() {
         for v in [0u32, 1, 0x0102_0304, 0xFF00_FF00, u32::MAX] {
             assert_eq!(be32_to_cpu(cpu_to_be32(v)), v);
@@ -86,7 +86,7 @@ mod tests {
         }
     }
 
-    #[test]
+    #[test_case]
     fn cpu_to_be32_puts_msb_first_in_memory() {
         // Memory layout (to_ne_bytes) should be [MSB, ..., LSB]
         let be = cpu_to_be32(0x1234_5678u32);
@@ -95,7 +95,7 @@ mod tests {
 
     // --- be64 roundtrip ---
 
-    #[test]
+    #[test_case]
     fn be64_roundtrip() {
         for v in [0u64, 1, 0x0102_0304_0506_0708, u64::MAX] {
             assert_eq!(be64_to_cpu(cpu_to_be64(v)), v);
@@ -105,7 +105,7 @@ mod tests {
 
     // --- read_be32 known value ---
 
-    #[test]
+    #[test_case]
     fn read_be32_known_bytes() {
         assert_eq!(read_be32(&[0x12, 0x34, 0x56, 0x78]), 0x1234_5678);
         assert_eq!(read_be32(&[0x00, 0x00, 0x00, 0x01]), 1);
@@ -113,7 +113,7 @@ mod tests {
         assert_eq!(read_be32(&[0x00, 0x00, 0x00, 0x00]), 0);
     }
 
-    #[test]
+    #[test_case]
     fn read_be32_matches_cpu_to_be32() {
         let v = 0xDEAD_BEEFu32;
         // to_ne_bytes gives the memory layout that cpu_to_be32 is meant to produce
@@ -123,7 +123,7 @@ mod tests {
 
     // --- write_be32 / read_be32 roundtrip ---
 
-    #[test]
+    #[test_case]
     fn write_then_read_be32_roundtrip() {
         for v in [0u32, 1, 0x0102_0304, 0xFF00_FF00, u32::MAX] {
             let mut buf = [0u8; 4];
@@ -132,7 +132,7 @@ mod tests {
         }
     }
 
-    #[test]
+    #[test_case]
     fn write_be32_byte_order() {
         let mut buf = [0u8; 4];
         write_be32(&mut buf, 0x0A0B_0C0D);
@@ -141,14 +141,14 @@ mod tests {
 
     // --- read_le32 ---
 
-    #[test]
+    #[test_case]
     fn read_le32_known_bytes() {
         assert_eq!(read_le32(&[0x78, 0x56, 0x34, 0x12]), 0x1234_5678);
         assert_eq!(read_le32(&[0x01, 0x00, 0x00, 0x00]), 1);
         assert_eq!(read_le32(&[0xFF, 0xFF, 0xFF, 0xFF]), u32::MAX);
     }
 
-    #[test]
+    #[test_case]
     fn read_le32_opposite_of_read_be32() {
         let bytes = [0x12u8, 0x34, 0x56, 0x78];
         let be = read_be32(&bytes);
@@ -161,7 +161,7 @@ mod tests {
 
     // --- longer-than-4 slices are accepted ---
 
-    #[test]
+    #[test_case]
     fn read_functions_accept_longer_slices() {
         let buf = [0x01u8, 0x02, 0x03, 0x04, 0x05, 0x06];
         assert_eq!(read_be32(&buf), 0x0102_0304);

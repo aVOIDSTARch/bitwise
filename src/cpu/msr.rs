@@ -89,13 +89,13 @@ mod tests {
     use super::*;
     use super::msr_num::*;
 
-    #[test]
+    #[test_case]
     fn msr_function_signatures() {
         let _rdmsr: unsafe fn(u32) -> u64 = rdmsr;
         let _wrmsr: unsafe fn(u32, u64)   = wrmsr;
     }
 
-    #[test]
+    #[test_case]
     fn msr_num_values_match_intel_sdm() {
         assert_eq!(EFER,           0xC000_0080);
         assert_eq!(IA32_APIC_BASE, 0x0000_001B);

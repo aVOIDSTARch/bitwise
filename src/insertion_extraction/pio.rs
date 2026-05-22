@@ -129,7 +129,7 @@ pub unsafe fn pio_clear_bits8(port: u16, mask: u8) {
 mod tests {
     use super::*;
 
-    #[test]
+    #[test_case]
     fn pio_functions_have_correct_signatures() {
         // Verify that each function can be referenced — this catches regressions
         // in signature (wrong type, removed function, etc.) without executing

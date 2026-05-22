@@ -327,7 +327,7 @@ mod tests {
 
     // --- SegmentSelector ---
 
-    #[test]
+    #[test_case]
     fn selector_null() {
         assert_eq!(SegmentSelector::NULL.0, 0);
         assert_eq!(SegmentSelector::NULL.index(), 0);
@@ -335,7 +335,7 @@ mod tests {
         assert!(!SegmentSelector::NULL.is_ldt());
     }
 
-    #[test]
+    #[test_case]
     fn selector_roundtrip() {
         let s = SegmentSelector::new(5, 0, false);
         assert_eq!(s.index(), 5);
@@ -343,7 +343,7 @@ mod tests {
         assert!(!s.is_ldt());
     }
 
-    #[test]
+    #[test_case]
     fn selector_user_cs() {
         // Typical user code selector: index=3, RPL=3
         let s = SegmentSelector::new(3, 3, false);
@@ -352,7 +352,7 @@ mod tests {
         assert!(!s.is_ldt());
     }
 
-    #[test]
+    #[test_case]
     fn selector_ldt() {
         let s = SegmentSelector::new(1, 0, true);
         assert!(s.is_ldt());
@@ -360,19 +360,19 @@ mod tests {
 
     // --- GdtDescriptor ---
 
-    #[test]
+    #[test_case]
     fn gdt_null_is_zero() {
         assert_eq!(GdtDescriptor::NULL.0, 0);
     }
 
-    #[test]
+    #[test_case]
     fn gdt_code64_kernel_raw_value() {
         // Expected: P=1, DPL=0, S=1, type=0b1010, L=1, G=1, limit=0xFFFFF, base=0
         let raw = GdtDescriptor::code64_kernel().0;
         assert_eq!(raw, 0x00AF_9A00_0000_FFFF);
     }
 
-    #[test]
+    #[test_case]
     fn gdt_code64_user_dpl() {
         let d = GdtDescriptor::code64_user();
         assert_eq!(d.dpl(), 3);
@@ -380,7 +380,7 @@ mod tests {
         assert!(d.is_long_mode());
     }
 
-    #[test]
+    #[test_case]
     fn gdt_code64_kernel_fields() {
         let d = GdtDescriptor::code64_kernel();
         assert_eq!(d.base(),    0);
@@ -390,7 +390,7 @@ mod tests {
         assert!(d.is_long_mode());
     }
 
-    #[test]
+    #[test_case]
     fn gdt_data64_fields() {
         let d = GdtDescriptor::data64();
         assert_eq!(d.dpl(), 0);
@@ -400,7 +400,7 @@ mod tests {
 
     // --- TssDescriptor ---
 
-    #[test]
+    #[test_case]
     fn tss_descriptor_base_roundtrip() {
         let bases = [
             0x0000_0000_1234_5678u64,
@@ -415,12 +415,12 @@ mod tests {
 
     // --- IdtGate ---
 
-    #[test]
+    #[test_case]
     fn idt_gate_missing_is_not_present() {
         assert!(!IdtGate::MISSING.is_present());
     }
 
-    #[test]
+    #[test_case]
     fn idt_interrupt_gate_type() {
         let cs = SegmentSelector::new(1, 0, false);
         let g  = IdtGate::interrupt_gate(0xFFFF_DEAD_BEEF_1234, cs, 0, 0);
@@ -428,14 +428,14 @@ mod tests {
         assert!(g.is_present());
     }
 
-    #[test]
+    #[test_case]
     fn idt_trap_gate_type() {
         let cs = SegmentSelector::new(1, 0, false);
         let g  = IdtGate::trap_gate(0x1234_5678_9ABC_DEF0, cs, 0, 0);
         assert_eq!(g.gate_type(), 0xF);
     }
 
-    #[test]
+    #[test_case]
     fn idt_gate_handler_roundtrip() {
         let handlers = [
             0x0000_0000_0000_1234u64,
@@ -449,7 +449,7 @@ mod tests {
         }
     }
 
-    #[test]
+    #[test_case]
     fn idt_gate_ist_and_dpl() {
         let cs = SegmentSelector::new(1, 0, false);
         // DPL=3, IST=2
@@ -460,19 +460,19 @@ mod tests {
 
     // --- tss_offsets ---
 
-    #[test]
+    #[test_case]
     fn tss_offsets_rsp0_at_4() {
         assert_eq!(tss_offsets::RSP0, 4);
     }
 
-    #[test]
+    #[test_case]
     fn tss_offsets_ist_spacing() {
         // IST entries are 8 bytes apart
         assert_eq!(tss_offsets::IST2 - tss_offsets::IST1, 8);
         assert_eq!(tss_offsets::IST7 - tss_offsets::IST1, 48);
     }
 
-    #[test]
+    #[test_case]
     fn tss_offsets_size() {
         assert_eq!(tss_offsets::SIZE, 104);
     }

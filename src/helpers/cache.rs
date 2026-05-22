@@ -57,7 +57,7 @@ mod tests {
 
     // --- CACHE_LINE_BYTES / CACHE_LINE_BITS ---
 
-    #[test]
+    #[test_case]
     fn constants_are_consistent() {
         assert_eq!(1u64 << CACHE_LINE_BITS, CACHE_LINE_BYTES);
         assert_eq!(CACHE_LINE_BYTES, 64);
@@ -65,14 +65,14 @@ mod tests {
 
     // --- cache_align_size ---
 
-    #[test]
+    #[test_case]
     fn cache_align_size_exact_multiple() {
         assert_eq!(cache_align_size(0), 0);
         assert_eq!(cache_align_size(64), 64);
         assert_eq!(cache_align_size(128), 128);
     }
 
-    #[test]
+    #[test_case]
     fn cache_align_size_rounds_up() {
         assert_eq!(cache_align_size(1), 64);
         assert_eq!(cache_align_size(63), 64);
@@ -80,7 +80,7 @@ mod tests {
         assert_eq!(cache_align_size(127), 128);
     }
 
-    #[test]
+    #[test_case]
     fn cache_align_size_result_always_multiple_of_line() {
         for size in [1u64, 7, 31, 33, 63, 64, 65, 100, 127, 128, 200] {
             assert_eq!(cache_align_size(size) % CACHE_LINE_BYTES, 0);
@@ -89,7 +89,7 @@ mod tests {
 
     // --- cache_line_of ---
 
-    #[test]
+    #[test_case]
     fn cache_line_of_basic() {
         assert_eq!(cache_line_of(0), 0);
         assert_eq!(cache_line_of(63), 0);
@@ -98,7 +98,7 @@ mod tests {
         assert_eq!(cache_line_of(128), 2);
     }
 
-    #[test]
+    #[test_case]
     fn cache_line_of_large_address() {
         let addr = 64 * 1000;
         assert_eq!(cache_line_of(addr), 1000);
@@ -106,14 +106,14 @@ mod tests {
 
     // --- cache_line_offset ---
 
-    #[test]
+    #[test_case]
     fn cache_line_offset_at_boundary_is_zero() {
         assert_eq!(cache_line_offset(0), 0);
         assert_eq!(cache_line_offset(64), 0);
         assert_eq!(cache_line_offset(128), 0);
     }
 
-    #[test]
+    #[test_case]
     fn cache_line_offset_within_line() {
         assert_eq!(cache_line_offset(1), 1);
         assert_eq!(cache_line_offset(63), 63);
@@ -121,7 +121,7 @@ mod tests {
         assert_eq!(cache_line_offset(127), 63);
     }
 
-    #[test]
+    #[test_case]
     fn cache_line_offset_range() {
         for addr in 0u64..256 {
             assert!(cache_line_offset(addr) < CACHE_LINE_BYTES);
@@ -130,14 +130,14 @@ mod tests {
 
     // --- cache_line_start ---
 
-    #[test]
+    #[test_case]
     fn cache_line_start_at_boundary() {
         assert_eq!(cache_line_start(0), 0);
         assert_eq!(cache_line_start(64), 64);
         assert_eq!(cache_line_start(128), 128);
     }
 
-    #[test]
+    #[test_case]
     fn cache_line_start_rounds_down() {
         assert_eq!(cache_line_start(1), 0);
         assert_eq!(cache_line_start(63), 0);
@@ -145,7 +145,7 @@ mod tests {
         assert_eq!(cache_line_start(127), 64);
     }
 
-    #[test]
+    #[test_case]
     fn cache_line_start_matches_line_of() {
         for addr in [0u64, 1, 33, 63, 64, 65, 100, 127, 128, 200, 255] {
             assert_eq!(cache_line_start(addr), cache_line_of(addr) * CACHE_LINE_BYTES);
@@ -154,7 +154,7 @@ mod tests {
 
     // --- is_cache_line_contained ---
 
-    #[test]
+    #[test_case]
     fn contained_entirely_within_one_line() {
         assert!(is_cache_line_contained(0, 1));
         assert!(is_cache_line_contained(0, 64));
@@ -163,7 +163,7 @@ mod tests {
         assert!(is_cache_line_contained(10, 20));
     }
 
-    #[test]
+    #[test_case]
     fn not_contained_crosses_boundary() {
         assert!(!is_cache_line_contained(63, 2));  // 63..64 crosses line boundary
         assert!(!is_cache_line_contained(1, 64));  // 1..64 crosses at 64
@@ -172,33 +172,33 @@ mod tests {
 
     // --- cache_lines_spanned ---
 
-    #[test]
+    #[test_case]
     fn zero_size_spans_zero_lines() {
         assert_eq!(cache_lines_spanned(0, 0), 0);
         assert_eq!(cache_lines_spanned(100, 0), 0);
     }
 
-    #[test]
+    #[test_case]
     fn single_byte_spans_one_line() {
         assert_eq!(cache_lines_spanned(0, 1), 1);
         assert_eq!(cache_lines_spanned(63, 1), 1);
         assert_eq!(cache_lines_spanned(64, 1), 1);
     }
 
-    #[test]
+    #[test_case]
     fn exactly_one_cache_line_spans_one() {
         assert_eq!(cache_lines_spanned(0, 64), 1);
         assert_eq!(cache_lines_spanned(64, 64), 1);
     }
 
-    #[test]
+    #[test_case]
     fn crossing_boundary_spans_two() {
         assert_eq!(cache_lines_spanned(63, 2), 2);
         assert_eq!(cache_lines_spanned(1, 64), 2);
         assert_eq!(cache_lines_spanned(56, 16), 2);
     }
 
-    #[test]
+    #[test_case]
     fn large_range_spans_correct_lines() {
         // 0..256 = exactly 4 cache lines
         assert_eq!(cache_lines_spanned(0, 256), 4);

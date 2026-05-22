@@ -218,14 +218,14 @@ pub fn has_1gb_pages() -> bool {
 mod tests {
     use super::*;
 
-    #[test]
+    #[test_case]
     fn cpuid_result_is_copy() {
         let r = CpuidResult { eax: 1, ebx: 2, ecx: 3, edx: 4 };
         let r2 = r;
         assert_eq!(r, r2);
     }
 
-    #[test]
+    #[test_case]
     fn cpuid_function_signatures() {
         let _cpuid:             unsafe fn(u32, u32) -> CpuidResult = cpuid;
         let _cpuid_leaf:        unsafe fn(u32) -> CpuidResult      = cpuid_leaf;
@@ -233,7 +233,7 @@ mod tests {
         let _max_extended:      unsafe fn() -> u32                 = max_extended_leaf;
     }
 
-    #[test]
+    #[test_case]
     fn feature_fn_signatures() {
         let _: fn() -> bool = has_nx;
         let _: fn() -> bool = has_apic;

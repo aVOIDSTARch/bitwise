@@ -190,7 +190,7 @@ pub unsafe fn wbinvd() {
 mod tests {
     use super::*;
 
-    #[test]
+    #[test_case]
     fn cpu_instruction_signatures() {
         let _pause:    fn()          = pause;
         let _mfence:   fn()          = mfence;

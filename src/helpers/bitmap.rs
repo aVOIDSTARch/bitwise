@@ -170,21 +170,21 @@ impl<'a, const N: usize> Iterator for SetBitIter<'a, N> {
 mod tests {
     use super::*;
 
-    #[test]
+    #[test_case]
     fn new_all_free() {
         let b: BitArray<4> = BitArray::new();
         assert_eq!(b.count_set(), 0);
         assert_eq!(b.count_free(), 256);
     }
 
-    #[test]
+    #[test_case]
     fn capacity() {
         assert_eq!(BitArray::<1>::capacity(), 64);
         assert_eq!(BitArray::<4>::capacity(), 256);
         assert_eq!(BitArray::<8>::capacity(), 512);
     }
 
-    #[test]
+    #[test_case]
     fn set_clear_test_roundtrip() {
         let mut b: BitArray<2> = BitArray::new();
         for i in [0usize, 1, 63, 64, 127] {
@@ -196,7 +196,7 @@ mod tests {
         }
     }
 
-    #[test]
+    #[test_case]
     fn alloc_first_free_sequential() {
         let mut b: BitArray<1> = BitArray::new();
         for expected in 0..64 {
@@ -206,7 +206,7 @@ mod tests {
         assert_eq!(b.alloc_first_free(), None);
     }
 
-    #[test]
+    #[test_case]
     fn alloc_after_free() {
         let mut b: BitArray<1> = BitArray::new();
         let a = b.alloc_first_free().unwrap(); // 0
@@ -216,7 +216,7 @@ mod tests {
         assert_eq!(b.alloc_first_free(), Some(0));
     }
 
-    #[test]
+    #[test_case]
     fn count_set_and_free_consistent() {
         let mut b: BitArray<2> = BitArray::new();
         b.set(3);
@@ -225,7 +225,7 @@ mod tests {
         assert_eq!(b.count_free(), BitArray::<2>::capacity() - 2);
     }
 
-    #[test]
+    #[test_case]
     fn set_all_then_clear_all() {
         let mut b: BitArray<2> = BitArray::new();
         b.set_all();
@@ -234,7 +234,7 @@ mod tests {
         assert_eq!(b.count_set(), 0);
     }
 
-    #[test]
+    #[test_case]
     fn iter_set_visits_all_set_bits() {
         let mut b: BitArray<2> = BitArray::new();
         let indices = [0usize, 1, 63, 64, 65, 127];
@@ -251,13 +251,13 @@ mod tests {
         assert_eq!(&collected[..], &indices[..]);
     }
 
-    #[test]
+    #[test_case]
     fn iter_set_empty_bitmap() {
         let b: BitArray<2> = BitArray::new();
         assert_eq!(b.iter_set().count(), 0);
     }
 
-    #[test]
+    #[test_case]
     fn iter_set_count_matches_count_set() {
         let mut b: BitArray<4> = BitArray::new();
         for i in (0..256).step_by(7) {
@@ -266,7 +266,7 @@ mod tests {
         assert_eq!(b.iter_set().count(), b.count_set());
     }
 
-    #[test]
+    #[test_case]
     fn const_test_at_compile_time() {
         const B: BitArray<1> = BitArray::new();
         const _: bool = B.test(0);

@@ -242,60 +242,60 @@ mod tests {
 
     // --- PhysAddr ---
 
-    #[test]
+    #[test_case]
     fn phys_new_valid() {
         let p = PhysAddr::new(0x0000_1234_5678_9000);
         assert_eq!(p.as_u64(), 0x0000_1234_5678_9000);
     }
 
-    #[test]
+    #[test_case]
     fn phys_new_truncate_strips_high_bits() {
         let p = PhysAddr::new_truncate(0xFFFF_1234_5678_9000);
         assert_eq!(p.as_u64(), 0x000F_1234_5678_9000);
     }
 
-    #[test]
+    #[test_case]
     fn phys_zero() {
         assert_eq!(PhysAddr::ZERO.as_u64(), 0);
     }
 
-    #[test]
+    #[test_case]
     fn phys_align_roundtrip() {
         let p = PhysAddr::new(0x0000_0000_1234_5ABC);
         assert_eq!(p.align_down(0x1000).as_u64(), 0x0000_0000_1234_5000);
         assert_eq!(p.align_up(0x1000).as_u64(),   0x0000_0000_1234_6000);
     }
 
-    #[test]
+    #[test_case]
     fn phys_is_aligned() {
         assert!( PhysAddr::new(0x0000_0000_0002_0000).is_aligned(0x1000));
         assert!(!PhysAddr::new(0x0000_0000_0002_0001).is_aligned(0x1000));
     }
 
-    #[test]
+    #[test_case]
     fn phys_frame_number_4k() {
         assert_eq!(PhysAddr::new(0x0000_0000_0002_3000).frame_number(0x1000), 0x23);
     }
 
-    #[test]
+    #[test_case]
     fn phys_checked_add_in_range() {
         let p = PhysAddr::new(0x0000_0000_0010_0000);
         assert_eq!(p.checked_add(0x1000).unwrap().as_u64(), 0x0000_0000_0010_1000);
     }
 
-    #[test]
+    #[test_case]
     fn phys_checked_add_overflow_returns_none() {
         let p = PhysAddr::new(crate::PHYS_ADDR_MASK);
         assert!(p.checked_add(1).is_none());
     }
 
-    #[test]
+    #[test_case]
     fn phys_add_sub_roundtrip() {
         let p = PhysAddr::new(0x0000_0000_0010_0000);
         assert_eq!((p + 0x5000 - 0x5000).as_u64(), p.as_u64());
     }
 
-    #[test]
+    #[test_case]
     fn phys_sub_phys() {
         let a = PhysAddr::new(0x0000_0000_0020_0000);
         let b = PhysAddr::new(0x0000_0000_0010_0000);
@@ -304,73 +304,73 @@ mod tests {
 
     // --- VirtAddr ---
 
-    #[test]
+    #[test_case]
     fn virt_is_canonical_user() {
         assert!(VirtAddr::is_canonical(0x0000_0000_0000_0000));
         assert!(VirtAddr::is_canonical(0x0000_7FFF_FFFF_FFFF));
     }
 
-    #[test]
+    #[test_case]
     fn virt_is_canonical_kernel() {
         assert!(VirtAddr::is_canonical(0xFFFF_8000_0000_0000));
         assert!(VirtAddr::is_canonical(0xFFFF_FFFF_FFFF_FFFF));
     }
 
-    #[test]
+    #[test_case]
     fn virt_is_not_canonical() {
         assert!(!VirtAddr::is_canonical(0x0000_8000_0000_0000));
         assert!(!VirtAddr::is_canonical(0x8000_0000_0000_0000));
         assert!(!VirtAddr::is_canonical(0x0001_0000_0000_0000));
     }
 
-    #[test]
+    #[test_case]
     fn virt_new_some_and_none() {
         assert!(VirtAddr::new(0x0000_0000_1234_5000).is_some());
         assert!(VirtAddr::new(0xFFFF_FFFF_FFFF_F000).is_some());
         assert!(VirtAddr::new(0x0000_8000_0000_0000).is_none());
     }
 
-    #[test]
+    #[test_case]
     fn virt_new_truncate_sign_extends_user() {
         let v = VirtAddr::new_truncate(0xABCD_0000_0000_1000);
         // lower 48 bits = 0x0000_0000_1000, bit 47 = 0 → upper bits 0
         assert_eq!(v.as_u64(), 0x0000_0000_0000_1000);
     }
 
-    #[test]
+    #[test_case]
     fn virt_new_truncate_sign_extends_kernel() {
         let v = VirtAddr::new_truncate(0x0000_8000_0000_0000);
         // bit 47 of input = 1 → upper bits all 1
         assert_eq!(v.as_u64(), 0xFFFF_8000_0000_0000);
     }
 
-    #[test]
+    #[test_case]
     fn virt_align_down_page() {
         let v = VirtAddr::new(0xFFFF_FFFF_FFFF_F800).unwrap();
         assert_eq!(v.align_down(0x1000).as_u64(), 0xFFFF_FFFF_FFFF_F000);
     }
 
-    #[test]
+    #[test_case]
     fn virt_pt_index_level1() {
         // vaddr bits [20:12] for level 1
         let v = VirtAddr::new(0x0000_0000_0020_1000).unwrap();
         assert_eq!(v.pt_index(1), 1);
     }
 
-    #[test]
+    #[test_case]
     fn virt_page_offset_4k() {
         let v = VirtAddr::new(0x0000_0000_0000_1ABC).unwrap();
         assert_eq!(v.page_offset(0x1000), 0xABC);
     }
 
-    #[test]
+    #[test_case]
     fn virt_add_preserves_canonicality() {
         let v = VirtAddr::new(0xFFFF_FFFF_FFFF_F000).unwrap();
         let v2 = v + 0x1000;
         assert!(VirtAddr::is_canonical(v2.as_u64()));
     }
 
-    #[test]
+    #[test_case]
     fn virt_sub_virt() {
         let a = VirtAddr::new(0x0000_0000_0002_0000).unwrap();
         let b = VirtAddr::new(0x0000_0000_0001_0000).unwrap();

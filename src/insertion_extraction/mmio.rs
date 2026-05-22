@@ -238,7 +238,7 @@ mod tests {
 
     // --- mmio_read8 / mmio_write8 ---
 
-    #[test]
+    #[test_case]
     fn read_write_u8() {
         let mut storage: u8 = 0;
         let addr = addr_of_mut(&mut storage);
@@ -248,7 +248,7 @@ mod tests {
 
     // --- mmio_read16 / mmio_write16 ---
 
-    #[test]
+    #[test_case]
     fn read_write_u16() {
         let mut storage: u16 = 0;
         let addr = addr_of_mut(&mut storage);
@@ -258,7 +258,7 @@ mod tests {
 
     // --- mmio_read32 / mmio_write32 ---
 
-    #[test]
+    #[test_case]
     fn read_write_u32_roundtrip() {
         let mut storage: u32 = 0;
         let addr = addr_of_mut(&mut storage);
@@ -270,7 +270,7 @@ mod tests {
 
     // --- mmio_read64 / mmio_write64 ---
 
-    #[test]
+    #[test_case]
     fn read_write_u64_roundtrip() {
         let mut storage: u64 = 0;
         let addr = addr_of_mut(&mut storage);
@@ -282,7 +282,7 @@ mod tests {
 
     // --- mmio_set_bits32 ---
 
-    #[test]
+    #[test_case]
     fn set_bits32_ors_into_existing() {
         let mut storage: u32 = 0x0000_00F0;
         let addr = addr_of_mut(&mut storage);
@@ -290,7 +290,7 @@ mod tests {
         assert_eq!(unsafe { mmio_read32(addr) }, 0x0000_00FF);
     }
 
-    #[test]
+    #[test_case]
     fn set_bits32_idempotent() {
         let mut storage: u32 = 0xFFFF_FFFF;
         let addr = addr_of_mut(&mut storage);
@@ -300,7 +300,7 @@ mod tests {
 
     // --- mmio_clear_bits32 ---
 
-    #[test]
+    #[test_case]
     fn clear_bits32_removes_bits() {
         let mut storage: u32 = 0x0000_00FF;
         let addr = addr_of_mut(&mut storage);
@@ -308,7 +308,7 @@ mod tests {
         assert_eq!(unsafe { mmio_read32(addr) }, 0x0000_00F0);
     }
 
-    #[test]
+    #[test_case]
     fn clear_bits32_idempotent_on_zero() {
         let mut storage: u32 = 0;
         let addr = addr_of_mut(&mut storage);
@@ -318,7 +318,7 @@ mod tests {
 
     // --- mmio_update_field32 ---
 
-    #[test]
+    #[test_case]
     fn update_field32_replaces_masked_bits() {
         let mut storage: u32 = 0xFFFF_FFFF;
         let addr = addr_of_mut(&mut storage);
@@ -333,7 +333,7 @@ mod tests {
 
     // --- mmio_set_bits64 / mmio_clear_bits64 ---
 
-    #[test]
+    #[test_case]
     fn set_and_clear_bits64() {
         let mut storage: u64 = 0;
         let addr = addr_of_mut(&mut storage);
@@ -345,7 +345,7 @@ mod tests {
 
     // --- MmioBlock ---
 
-    #[test]
+    #[test_case]
     fn mmio_block_read_write32() {
         let mut regs = [0u32; 4];
         let base = addr_of_mut(&mut regs[0]);
@@ -356,7 +356,7 @@ mod tests {
         assert_eq!(unsafe { block.read32(0) }, 0);
     }
 
-    #[test]
+    #[test_case]
     fn mmio_block_set_and_clear_bits32() {
         let mut storage: u32 = 0x00FF_00FF;
         let base = addr_of_mut(&mut storage);
@@ -367,7 +367,7 @@ mod tests {
         assert_eq!(unsafe { block.read32(0) }, 0xF0F0_F0F0);
     }
 
-    #[test]
+    #[test_case]
     fn mmio_block_read_write8() {
         let mut storage: u8 = 0;
         let base = addr_of_mut(&mut storage);
@@ -376,7 +376,7 @@ mod tests {
         assert_eq!(unsafe { block.read8(0) }, 0x7E);
     }
 
-    #[test]
+    #[test_case]
     fn mmio_block_read_write64() {
         let mut storage: u64 = 0;
         let base = addr_of_mut(&mut storage);

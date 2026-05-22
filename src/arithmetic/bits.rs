@@ -142,26 +142,26 @@ mod tests {
 
     // --- bit_set / bit_clear / bit_toggle / bit_test ---
 
-    #[cfg(test)]
+    #[test_case]
     fn bit_set_zero_base() {
         assert_eq!(bit_set(0, 0), 1);
         assert_eq!(bit_set(0, 7), 0x80);
         assert_eq!(bit_set(0, 63), 1u64 << 63);
     }
 
-    #[cfg(test)]
+    #[test_case]
     fn bit_set_already_set_is_idempotent() {
         assert_eq!(bit_set(0xFF, 3), 0xFF);
     }
 
-    #[cfg(test)]
+    #[test_case]
     fn bit_clear_basics() {
         assert_eq!(bit_clear(0xFF, 0), 0xFE);
         assert_eq!(bit_clear(0xFF, 7), 0x7F);
         assert_eq!(bit_clear(0, 5), 0);
     }
 
-    #[cfg(test)]
+    #[test_case]
     fn bit_toggle_roundtrip() {
         for n in 0u32..64 {
             let val = 0u64;
@@ -169,7 +169,7 @@ mod tests {
         }
     }
 
-    #[cfg(test)]
+    #[test_case]
     fn bit_test_set_and_clear() {
         let v = 0b1010_0101u64;
         assert!(bit_test(v, 0));
@@ -181,28 +181,28 @@ mod tests {
 
     // --- bit_field_get ---
 
-    #[cfg(test)]
+    #[test_case]
     fn bit_field_get_low_nibble() {
         assert_eq!(bit_field_get(0xABCD, 3, 0), 0xD);
     }
 
-    #[cfg(test)]
+    #[test_case]
     fn bit_field_get_high_nibble() {
         assert_eq!(bit_field_get(0xABCD, 15, 12), 0xA);
     }
 
-    #[cfg(test)]
+    #[test_case]
     fn bit_field_get_single_bit() {
         assert_eq!(bit_field_get(0b1010, 1, 1), 1);
         assert_eq!(bit_field_get(0b1010, 0, 0), 0);
     }
 
-    #[cfg(test)]
+    #[test_case]
     fn bit_field_get_full_width() {
         assert_eq!(bit_field_get(u64::MAX, 63, 0), u64::MAX);
     }
 
-    #[cfg(test)]
+    #[test_case]
     fn bit_field_get_iopl_example() {
         // IOPL lives in RFLAGS bits 13:12; value 3 = ring 0 only
         let rflags: u64 = 3 << 12;
@@ -211,14 +211,14 @@ mod tests {
 
     // --- bit_field_set ---
 
-    #[cfg(test)]
+    #[test_case]
     fn bit_field_set_replaces_field() {
         let v = 0b1111_1111u64;
         assert_eq!(bit_field_set(v, 2, 0, 0b000), 0b1111_1000);
         assert_eq!(bit_field_set(v, 2, 0, 0b101), 0b1111_1101);
     }
 
-    #[cfg(test)]
+    #[test_case]
     fn bit_field_set_preserves_surrounding_bits() {
         let v: u64 = 0xFFFF_FFFF_FFFF_FFFF;
         let result = bit_field_set(v, 7, 4, 0b0000);
@@ -226,7 +226,7 @@ mod tests {
         assert_eq!((result >> 4) & 0xF, 0);    // bits [7:4] are 0
     }
 
-    #[cfg(test)]
+    #[test_case]
     fn bit_field_get_set_roundtrip() {
         let original = 0xDEAD_BEEF_1234_5678u64;
         for (hi, lo) in [(3u32, 0u32), (15, 8), (47, 32), (63, 56)] {
@@ -240,19 +240,19 @@ mod tests {
 
     // --- bit_mask ---
 
-    #[cfg(test)]
+    #[test_case]
     fn bit_mask_basic() {
         assert_eq!(bit_mask(3, 0), 0xF);
         assert_eq!(bit_mask(7, 4), 0xF0);
         assert_eq!(bit_mask(0, 0), 1);
     }
 
-    #[cfg(test)]
+    #[test_case]
     fn bit_mask_full_width() {
         assert_eq!(bit_mask(63, 0), u64::MAX);
     }
 
-    #[cfg(test)]
+    #[test_case]
     fn bit_mask_matches_field_set_clear() {
         let m = bit_mask(11, 8);
         // mask should equal what bit_field_set inserts with all-ones field
@@ -262,14 +262,14 @@ mod tests {
 
     // --- is_power_of_two ---
 
-    #[cfg(test)]
+    #[test_case]
     fn is_power_of_two_true() {
         for exp in 0..64 {
             assert!(is_power_of_two(1u64 << exp), "1<<{exp} should be power-of-two");
         }
     }
 
-    #[cfg(test)]
+    #[test_case]
     fn is_power_of_two_false() {
         assert!(!is_power_of_two(0));
         assert!(!is_power_of_two(3));
@@ -280,7 +280,7 @@ mod tests {
 
     // --- next_power_of_two ---
 
-    #[cfg(test)]
+    #[test_case]
     fn next_power_of_two_exact_powers() {
         assert_eq!(next_power_of_two(1), 1);
         assert_eq!(next_power_of_two(2), 2);
@@ -288,7 +288,7 @@ mod tests {
         assert_eq!(next_power_of_two(0x1000), 0x1000);
     }
 
-    #[cfg(test)]
+    #[test_case]
     fn next_power_of_two_rounds_up() {
         assert_eq!(next_power_of_two(3), 4);
         assert_eq!(next_power_of_two(5), 8);
@@ -298,7 +298,7 @@ mod tests {
 
     // --- lowest_set_bit / clear_lowest_set_bit ---
 
-    #[cfg(test)]
+    #[test_case]
     fn lowest_set_bit_isolates_lsb() {
         assert_eq!(lowest_set_bit(0b1010), 0b0010);
         assert_eq!(lowest_set_bit(0b1100), 0b0100);
@@ -307,14 +307,14 @@ mod tests {
         assert_eq!(lowest_set_bit(0), 0);
     }
 
-    #[cfg(test)]
+    #[test_case]
     fn clear_lowest_set_bit_strips_lsb() {
         assert_eq!(clear_lowest_set_bit(0b1010), 0b1000);
         assert_eq!(clear_lowest_set_bit(0b1100), 0b1000);
         assert_eq!(clear_lowest_set_bit(1), 0);
     }
 
-    #[cfg(test)]
+    #[test_case]
     fn clear_lowest_set_bit_iteration_matches_popcount() {
         let original = 0b1011_0110_1001_1100u64;
         let expected_count = original.count_ones();
@@ -329,7 +329,7 @@ mod tests {
 
     // --- lowest_set_bit_index / highest_set_bit_index ---
 
-    #[cfg(test)]
+    #[test_case]
     fn lowest_set_bit_index_basic() {
         assert_eq!(lowest_set_bit_index(0), None);
         assert_eq!(lowest_set_bit_index(1), Some(0));
@@ -338,7 +338,7 @@ mod tests {
         assert_eq!(lowest_set_bit_index(1u64 << 63), Some(63));
     }
 
-    #[cfg(test)]
+    #[test_case]
     fn highest_set_bit_index_basic() {
         assert_eq!(highest_set_bit_index(0), None);
         assert_eq!(highest_set_bit_index(1), Some(0));
@@ -347,7 +347,7 @@ mod tests {
         assert_eq!(highest_set_bit_index(u64::MAX), Some(63));
     }
 
-    #[cfg(test)]
+    #[test_case]
     fn highest_set_bit_index_is_floor_log2() {
         for exp in 0u32..64 {
             assert_eq!(highest_set_bit_index(1u64 << exp), Some(exp));
@@ -356,7 +356,7 @@ mod tests {
 
     // --- popcount / even_parity ---
 
-    #[cfg(test)]
+    #[test_case]
     fn popcount_basic() {
         assert_eq!(popcount(0), 0);
         assert_eq!(popcount(1), 1);
@@ -365,7 +365,7 @@ mod tests {
         assert_eq!(popcount(0b1011_0110), 5);
     }
 
-    #[cfg(test)]
+    #[test_case]
     fn even_parity_basic() {
         assert!(even_parity(0));           // 0 set bits → even
         assert!(!even_parity(1));          // 1 set bit → odd

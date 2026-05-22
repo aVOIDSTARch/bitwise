@@ -107,7 +107,7 @@ mod tests {
 
     // --- dma_is_aligned ---
 
-    #[test]
+    #[test_case]
     fn dma_is_aligned_power_of_two() {
         assert!(dma_is_aligned(0, CACHE_LINE_SIZE));
         assert!(dma_is_aligned(64, CACHE_LINE_SIZE));
@@ -118,21 +118,21 @@ mod tests {
 
     // --- dma_align_buffer ---
 
-    #[test]
+    #[test_case]
     fn dma_align_buffer_already_aligned() {
         let (base, pad) = dma_align_buffer(0x1000, DMA_PAGE_SIZE);
         assert_eq!(base, 0x1000);
         assert_eq!(pad, 0);
     }
 
-    #[test]
+    #[test_case]
     fn dma_align_buffer_unaligned() {
         let (base, pad) = dma_align_buffer(0x1001, DMA_PAGE_SIZE);
         assert_eq!(base, 0x2000);
         assert_eq!(pad, 0x2000 - 0x1001);
     }
 
-    #[test]
+    #[test_case]
     fn dma_align_buffer_pad_plus_base_equals_next_boundary() {
         for phys in [0u64, 1, 63, 64, 100, 0x1FFF, 0x2000] {
             let align = CACHE_LINE_SIZE;
@@ -144,14 +144,14 @@ mod tests {
 
     // --- dma_round_length ---
 
-    #[test]
+    #[test_case]
     fn dma_round_length_exact_multiple() {
         assert_eq!(dma_round_length(0, 4), 0);
         assert_eq!(dma_round_length(4, 4), 4);
         assert_eq!(dma_round_length(64, 64), 64);
     }
 
-    #[test]
+    #[test_case]
     fn dma_round_length_rounds_up() {
         assert_eq!(dma_round_length(1, 4), 4);
         assert_eq!(dma_round_length(3, 4), 4);
@@ -161,7 +161,7 @@ mod tests {
 
     // --- dma_build_sg ---
 
-    #[test]
+    #[test_case]
     fn dma_build_sg_aligned_fits_in_one_segment() {
         let mut out = [(0u64, 0u64); 4];
         // Buffer starts at segment boundary, fits exactly
@@ -170,7 +170,7 @@ mod tests {
         assert_eq!(out[0], (0x0000, 0x1000));
     }
 
-    #[test]
+    #[test_case]
     fn dma_build_sg_crosses_one_boundary() {
         let mut out = [(0u64, 0u64); 4];
         // Buffer at 0x0800, length 0x1000 → crosses boundary at 0x1000
@@ -182,7 +182,7 @@ mod tests {
         assert_eq!(out[1].1, 0x0800);  // remaining
     }
 
-    #[test]
+    #[test_case]
     fn dma_build_sg_total_length_preserved() {
         let mut out = [(0u64, 0u64); 8];
         let phys = 0x0500u64;
@@ -193,7 +193,7 @@ mod tests {
         assert_eq!(total, len);
     }
 
-    #[test]
+    #[test_case]
     fn dma_build_sg_each_segment_stays_within_boundary() {
         let mut out = [(0u64, 0u64); 8];
         let phys = 0x0F00u64;
@@ -209,7 +209,7 @@ mod tests {
         }
     }
 
-    #[test]
+    #[test_case]
     fn dma_build_sg_zero_length() {
         let mut out = [(0u64, 0u64); 4];
         let count = dma_build_sg(0x1000, 0, 0x1000, &mut out);
@@ -218,7 +218,7 @@ mod tests {
 
     // --- fits_in_32bit_dma ---
 
-    #[test]
+    #[test_case]
     fn fits_in_32bit_dma_true_cases() {
         assert!(fits_in_32bit_dma(0, 0x1_0000_0000));
         assert!(fits_in_32bit_dma(0, 0));
@@ -226,7 +226,7 @@ mod tests {
         assert!(fits_in_32bit_dma(0x1000, 0x1000));
     }
 
-    #[test]
+    #[test_case]
     fn fits_in_32bit_dma_false_cases() {
         assert!(!fits_in_32bit_dma(0xFFFF_F000, 0x2000)); // 0xFFFF_F000 + 0x2000 = 0x1_0000_F000
         assert!(!fits_in_32bit_dma(0x1_0000_0000, 1));
@@ -235,7 +235,7 @@ mod tests {
 
     // --- phys_to_bus identity ---
 
-    #[test]
+    #[test_case]
     fn phys_to_bus_identity_mapping() {
         for addr in [0u64, 0x1000, 0xDEAD_BEEF, u64::MAX] {
             assert_eq!(phys_to_bus(addr), addr);
@@ -244,7 +244,7 @@ mod tests {
 
     // --- CACHE_LINE_SIZE / DMA_PAGE_SIZE constants ---
 
-    #[test]
+    #[test_case]
     fn constants_are_powers_of_two() {
         assert!(CACHE_LINE_SIZE.is_power_of_two());
         assert!(DMA_PAGE_SIZE.is_power_of_two());
