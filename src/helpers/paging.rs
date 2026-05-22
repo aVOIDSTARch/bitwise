@@ -137,6 +137,7 @@ mod tests {
     // --- pte_flags constants ---
 
     #[cfg(test)]
+    #[test_case]
     fn pte_flag_bit_positions() {
         assert_eq!(pte_flags::PRESENT,       1 << 0);
         assert_eq!(pte_flags::WRITABLE,      1 << 1);
@@ -153,6 +154,7 @@ mod tests {
     }
 
     #[cfg(test)]
+    #[test_case]
     fn pfn_masks_cover_correct_bits() {
         // 4K: bits 51:12
         assert_eq!(pte_flags::PFN_MASK_4K, 0x000F_FFFF_FFFF_F000);
@@ -163,6 +165,7 @@ mod tests {
     }
 
     #[cfg(test)]
+    #[test_case]
     fn pfn_masks_are_disjoint_from_low_flag_bits() {
         let low_flags = pte_flags::PRESENT | pte_flags::WRITABLE | pte_flags::USER
             | pte_flags::WRITE_THROUGH | pte_flags::CACHE_DISABLE
@@ -176,6 +179,7 @@ mod tests {
     // --- pte_encode / pte_phys_addr roundtrip ---
 
     #[cfg(test)]
+    #[test_case]
     fn pte_encode_decode_4k() {
         let phys = 0x0001_2000u64;  // 4K-aligned
         let flags = pte_flags::PRESENT | pte_flags::WRITABLE;
@@ -185,6 +189,7 @@ mod tests {
     }
 
     #[cfg(test)]
+    #[test_case]
     fn pte_encode_decode_2m() {
         let phys = 0x0020_0000u64;  // 2M-aligned
         let flags = pte_flags::PRESENT | pte_flags::HUGE_PAGE;
@@ -194,6 +199,7 @@ mod tests {
     }
 
     #[cfg(test)]
+    #[test_case]
     fn pte_encode_decode_1g() {
         let phys = 0x4000_0000u64;  // 1G-aligned
         let flags = pte_flags::PRESENT | pte_flags::HUGE_PAGE;
@@ -202,6 +208,7 @@ mod tests {
     }
 
     #[cfg(test)]
+    #[test_case]
     fn pte_encode_zero_flags_keeps_addr() {
         let phys = 0x5000u64;
         let entry = pte_encode(phys, 0x1000, 0);
@@ -210,6 +217,7 @@ mod tests {
     }
 
    #[cfg(test)]
+    #[test_case]
     fn pte_phys_addr_strips_nx_bit() {
         let phys = 0x0001_2000u64;
         let entry = pte_encode(phys, 0x1000, pte_flags::PRESENT | pte_flags::NO_EXECUTE);
@@ -219,6 +227,7 @@ mod tests {
     // --- pte_set_flags / pte_clear_flags ---
 
    #[cfg(test)]
+    #[test_case]
     fn set_and_clear_flags() {
         let entry = pte_encode(0x3000, 0x1000, pte_flags::PRESENT);
         let with_nx = pte_set_flags(entry, pte_flags::NO_EXECUTE);
@@ -232,6 +241,7 @@ mod tests {
     // --- pte_avail_bits roundtrip ---
 
     #[cfg(test)]
+    #[test_case]
     fn avail_bits_roundtrip_all_values() {
         let base = pte_encode(0x4000, 0x1000, pte_flags::PRESENT);
         for bits in 0u64..=7 {
@@ -243,6 +253,7 @@ mod tests {
     }
 
     #[cfg(test)]
+    #[test_case]
     fn avail_bits_do_not_leak_into_pfn() {
         let base = pte_encode(0x5000, 0x1000, 0);
         let entry = pte_set_avail_bits(base, 0b111);
@@ -252,6 +263,7 @@ mod tests {
     // --- pte_is_present / pte_is_huge ---
 
     #[cfg(test)]
+    #[test_case]
     fn is_present_and_huge_flags() {
         let absent = 0u64;
         assert!(!pte_is_present(absent));
@@ -269,6 +281,7 @@ mod tests {
     // --- vaddr_pt_index ---
 
     #[cfg(test)]
+    #[test_case]
     fn vaddr_pt_index_reference_values() {
         // Virtual address with known index values in each level:
         // Build a vaddr where level-1 idx = 1, level-2 idx = 2, level-3 idx = 3, level-4 idx = 4
@@ -280,6 +293,7 @@ mod tests {
     }
 
     #[cfg(test)]
+    #[test_case]
     fn vaddr_pt_index_max_value_is_511() {
         // 9 bits set in each field → 511
         let vaddr: u64 = (0x1FFu64 << 39) | (0x1FFu64 << 30) | (0x1FFu64 << 21) | (0x1FFu64 << 12);
@@ -290,6 +304,7 @@ mod tests {
     }
 
    #[cfg(test)]
+    #[test_case]
     fn vaddr_pt_index_zero_address() {
         for level in 1u32..=4 {
             assert_eq!(vaddr_pt_index(0, level), 0);
@@ -297,6 +312,7 @@ mod tests {
     }
 
    #[cfg(test)]
+    #[test_case]
     fn vaddr_pt_index_matches_bit_shift_reference() {
         let vaddr = 0xFFFF_8000_0020_3000u64;
         // Level 1: bits 20:12
@@ -312,6 +328,7 @@ mod tests {
     // --- vaddr_page_offset ---
 
     #[cfg(test)]
+    #[test_case]
     fn vaddr_page_offset_4k() {
         assert_eq!(vaddr_page_offset(0x1000, 0x1000), 0);
         assert_eq!(vaddr_page_offset(0x1ABC, 0x1000), 0xABC);
@@ -319,12 +336,14 @@ mod tests {
     }
 
     #[cfg(test)]
+    #[test_case]
     fn vaddr_page_offset_2m() {
         let addr = 0x0020_0500u64;
         assert_eq!(vaddr_page_offset(addr, 0x0020_0000), 0x500);
     }
 
    #[cfg(test)]
+    #[test_case]
     fn vaddr_page_offset_with_pte_roundtrip() {
         // pte_phys_addr(pte_encode(base, size, flags)) + vaddr_page_offset(vaddr, size) == vaddr
         let phys_base = 0x0040_0000u64;

@@ -207,11 +207,13 @@ mod tests {
     // --- FlagRegister construction ---
 
     #[cfg(test)]
+    #[test_case]
     fn zero_is_all_zeros() {
         assert_eq!(FlagRegister::ZERO.raw(), 0);
     }
 
     #[cfg(test)]
+    #[test_case]
     fn from_raw_roundtrip() {
         for v in [0u64, 1, 0xFF, u64::MAX, 0xDEAD_BEEF] {
             assert_eq!(FlagRegister::from_raw(v).raw(), v);
@@ -221,6 +223,7 @@ mod tests {
     // --- has / has_any ---
 
     #[cfg(test)]
+    #[test_case]
     fn has_single_flag() {
         let r = FlagRegister::from_raw(rflags::ZF | rflags::CF);
         assert!(r.has(rflags::ZF));
@@ -229,6 +232,7 @@ mod tests {
     }
 
     #[cfg(test)]
+    #[test_case]
     fn has_requires_all_bits() {
         let r = FlagRegister::from_raw(rflags::IOPL);  // bits 13:12, value 3<<12
         assert!(r.has(rflags::IOPL));
@@ -236,6 +240,7 @@ mod tests {
     }
 
     #[cfg(test)]
+    #[test_case]
     fn has_any_matches_any_bit() {
         let r = FlagRegister::from_raw(rflags::ZF);
         assert!(r.has_any(rflags::ZF | rflags::SF));
@@ -245,6 +250,7 @@ mod tests {
     // --- set / clear / toggle ---
 
     #[cfg(test)]
+    #[test_case]
     fn set_adds_bits() {
         let r = FlagRegister::ZERO.set(rflags::IF);
         assert!(r.has(rflags::IF));
@@ -252,6 +258,7 @@ mod tests {
     }
 
     #[cfg(test)]
+    #[test_case]
     fn clear_removes_bits() {
         let r = FlagRegister::from_raw(rflags::IF | rflags::ZF).clear(rflags::IF);
         assert!(!r.has(rflags::IF));
@@ -259,6 +266,7 @@ mod tests {
     }
 
     #[cfg(test)]
+    #[test_case]
     fn toggle_flips_bits() {
         let r = FlagRegister::from_raw(rflags::ZF);
         let toggled = r.toggle(rflags::ZF | rflags::CF);
@@ -267,6 +275,7 @@ mod tests {
     }
 
     #[cfg(test)]
+    #[test_case]
     fn toggle_roundtrip() {
         let original = FlagRegister::from_raw(0xABCD_EF01);
         assert_eq!(original.toggle(u64::MAX).toggle(u64::MAX), original);
@@ -275,12 +284,14 @@ mod tests {
     // --- replace_field ---
 
     #[cfg(test)]
+    #[test_case]
     fn replace_field_iopl() {
         let r = FlagRegister::ZERO.replace_field(rflags::IOPL, 2 << 12);
         assert_eq!(r.raw() >> 12 & 0x3, 2);
     }
 
     #[cfg(test)]
+    #[test_case]
     fn replace_field_does_not_touch_other_bits() {
         let r = FlagRegister::from_raw(rflags::IF | rflags::ZF);
         let r2 = r.replace_field(rflags::IOPL, 3 << 12);
@@ -292,6 +303,7 @@ mod tests {
     // --- isolate ---
 
     #[cfg(test)]
+    #[test_case]
     fn isolate_keeps_only_masked_bits() {
         let r = FlagRegister::from_raw(rflags::IF | rflags::ZF | rflags::CF);
         let iso = r.isolate(rflags::IF | rflags::ZF);
@@ -303,6 +315,7 @@ mod tests {
     // --- rflags constant values ---
 
     #[cfg(test)]
+    #[test_case]
     fn rflags_bit_positions() {
         assert_eq!(rflags::CF,   1 << 0);
         assert_eq!(rflags::PF,   1 << 2);
@@ -324,6 +337,7 @@ mod tests {
     }
 
     #[cfg(test)]
+    #[test_case]
     fn rflags_no_overlapping_single_bit_flags() {
         let single_bits = [
             rflags::CF, rflags::PF, rflags::AF, rflags::ZF,
@@ -343,6 +357,7 @@ mod tests {
     // --- cr0 constant values ---
 
     #[cfg(test)]
+    #[test_case]
     fn cr0_bit_positions() {
         assert_eq!(cr0::PE,  1 << 0);
         assert_eq!(cr0::MP,  1 << 1);
@@ -358,6 +373,7 @@ mod tests {
     }
 
     #[cfg(test)]
+    #[test_case]
     fn cr0_no_overlapping_flags() {
         let flags = [
             cr0::PE, cr0::MP, cr0::EM, cr0::TS, cr0::ET,
@@ -375,6 +391,7 @@ mod tests {
     // --- cr4 constant values ---
 
     #[cfg(test)]
+    #[test_case]
     fn cr4_bit_positions() {
         assert_eq!(cr4::VME,        1 << 0);
         assert_eq!(cr4::PVI,        1 << 1);
@@ -404,6 +421,7 @@ mod tests {
     // --- efer constant values ---
 
     #[cfg(test)]
+    #[test_case]
     fn efer_bit_positions() {
         assert_eq!(efer::SCE,   1 << 0);
         assert_eq!(efer::LME,   1 << 8);
@@ -416,6 +434,7 @@ mod tests {
     }
 
     #[cfg(test)]
+    #[test_case]
     fn efer_no_overlapping_flags() {
         let flags = [
             efer::SCE, efer::LME, efer::LMA, efer::NXE,
@@ -433,6 +452,7 @@ mod tests {
     // --- FlagRegister as a typed wrapper over hardware constants ---
 
     #[cfg(test)]
+    #[test_case]
     fn flag_register_typical_long_mode_efer() {
         // A typical EFER value on boot: SCE + LME + LMA + NXE
         let efer_val = FlagRegister::ZERO
@@ -447,6 +467,7 @@ mod tests {
     }
 
     #[cfg(test)]
+    #[test_case]
     fn flag_register_cr0_paging_enable() {
         let cr0_val = FlagRegister::from_raw(cr0::PE | cr0::NE | cr0::WP | cr0::PG);
         assert!(cr0_val.has(cr0::PG));

@@ -439,10 +439,20 @@ pub const CANONICAL_ADDR_MASK_48: u64 = 0x0000_FFFF_FFFF_FFFF;
 //   #[cfg_attr(target_os = "none", test_case)]
 //   fn my_test() { ... }
 
+/// QEMU test entry point (x86_64 bare-metal only).
+///
+/// Initializes the serial port, runs all `#[test_case]` functions via
+/// `framework::runner`, then exits QEMU with the success code.
 #[cfg(all(test, target_os = "none"))]
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn _start() -> ! {
     unsafe { platform::init(); }
     test_main();
     platform::exit_success()
+}
+
+#[cfg(all(test, target_os = "none"))]
+#[panic_handler]
+fn panic(info: &core::panic::PanicInfo) -> ! {
+    platform::platform_panic(info)
 }

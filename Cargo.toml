@@ -14,6 +14,7 @@ test-timeout = 300
 
 [lib]
 path = "src/kernel_bitwise/bitwise.rs"
+doctest = false
 
 [dependencies]
 # none — pure logic, no hardware deps
@@ -21,5 +22,6 @@ path = "src/kernel_bitwise/bitwise.rs"
 # Test infrastructure for x86_64-unknown-none (QEMU tests).
 # Not compiled when testing on the host (aarch64-apple-darwin).
 [target.'cfg(target_arch = "x86_64")'.dev-dependencies]
-framework = { path = "../framework", features = ["panic_handler"] }
-platform  = { path = "../platform" }
+framework  = { path = "../framework" }
+platform   = { path = "../platform" }
+bootloader = "0.9.0"
